@@ -34,6 +34,7 @@ static struct i2c_driver sky81294_i2c_driver;
 static struct msm_camera_i2c_reg_array sky81294_init_array[] = {
 	//{0x00, 0x00},
 	//{0x03,0x08},
+	//{0x01, 0x8b},
 };
 
 static struct msm_camera_i2c_reg_array sky81294_off_array[] = {
@@ -66,12 +67,14 @@ static struct msm_camera_i2c_reg_array sky81294_high_array[] = {
     {0x09,  0x1a},
     {0x0A,  0x03}, modified by wanggang */
 	//{0x00,0x0F},
-	{0x00,0x13},
+	{0x00,0x12},
 	{0x03,0x0A},
 
 };
 
+// zte-modify 20140829 add for fastmmi flash test +++
 static int msm_flash_sky81294_add_attr(struct platform_device *pdev, struct msm_led_flash_ctrl_t *fctrl);
+// zte-modify 20140829 add for fastmmi flash test ---
 
 static void __exit msm_flash_sky81294_i2c_remove(void)
 {
@@ -121,12 +124,15 @@ static struct i2c_driver sky81294_i2c_driver = {
 static int msm_flash_sky81294_platform_probe(struct platform_device *pdev)
 {
 	const struct of_device_id *match;
+    // zte-modify 20140829 add for fastmmi flash test +++
     int ret = -1;
+    // zte-modify 20140829 add for fastmmi flash test ---
 
 	match = of_match_device(sky81294_trigger_dt_match, &pdev->dev);
 	if (!match)
 		return -EFAULT;
 
+    // zte-modify 20140829 add for fastmmi flash test +++
 	//return msm_flash_probe(pdev, match->data);
 	ret = msm_flash_probe(pdev, match->data);
     if (0 == ret)
@@ -135,6 +141,7 @@ static int msm_flash_sky81294_platform_probe(struct platform_device *pdev)
     }
 
     return ret;
+    // zte-modify 20140829 add for fastmmi flash test ---
 }
 
 static struct platform_driver sky81294_platform_driver = {
@@ -168,12 +175,19 @@ static void __exit msm_flash_sky81294_exit_module(void)
 static int msm_flash_sky81294_led_init(struct msm_led_flash_ctrl_t *fctrl)
 {
 	int rc = 0, ret = 0;
-       uint16_t flag_reg = 0x0;
+    //uint16_t flag_reg = 0x0;
 	struct msm_camera_sensor_board_info *flashdata = NULL;
 	//struct msm_camera_power_ctrl_t *power_info = NULL;
 	CDBG("%s:%d called\n", __func__, __LINE__);
 
 	flashdata = fctrl->flashdata;
+
+    if (fctrl->led_state == MSM_CAMERA_LED_INIT) {		
+		CDBG("%s:%d Invalid flash state = %d",			
+			__func__, __LINE__, fctrl->led_state);		
+		return 0;	
+	}
+	fctrl->led_state = MSM_CAMERA_LED_INIT;
 	#if 0
 	power_info = &flashdata->power_info;
 	if (power_info->gpio_conf->cam_gpiomux_conf_tbl != NULL) {
@@ -213,6 +227,8 @@ static int msm_flash_sky81294_led_init(struct msm_led_flash_ctrl_t *fctrl)
 		if (rc < 0)
 			pr_err("cci_init failed\n");
 	}
+
+	#if 0
         ret = fctrl->flash_i2c_client->i2c_func_tbl->i2c_read(fctrl->flash_i2c_client, 
                 0x0B, &flag_reg , MSM_CAMERA_I2C_BYTE_DATA);
       
@@ -220,6 +236,15 @@ static int msm_flash_sky81294_led_init(struct msm_led_flash_ctrl_t *fctrl)
              pr_err("%s read flag register failed, rc = %d \n",__func__, rc);
          
          pr_err("%s read flag register = %d \n",__func__, flag_reg);
+    #endif
+
+    //lihy 20151030 add reset flag for sky81294
+    ret = fctrl->flash_i2c_client->i2c_func_tbl->i2c_write(fctrl->flash_i2c_client, 
+						 0x01, 0x8b, MSM_CAMERA_I2C_BYTE_DATA);
+			   
+		 if(ret < 0)
+		 pr_err("%s read flag register failed, rc = %d \n",__func__, ret);
+		 
     
 	return rc;
 }
@@ -257,6 +282,19 @@ static int msm_flash_sky81294_led_release(struct msm_led_flash_ctrl_t *fctrl)
 		return rc;
 	}
     #endif
+	if (fctrl->led_state == MSM_CAMERA_LED_RELEASE		
+		|| fctrl->led_state != MSM_CAMERA_LED_INIT) {		
+		pr_err("%s:%d Invalid flash state = %d",			
+			__func__, __LINE__, fctrl->led_state);		
+		return 0;	
+	}
+	if (fctrl->flash_i2c_client && fctrl->reg_setting) {
+		rc = fctrl->flash_i2c_client->i2c_func_tbl->i2c_write_table(
+			fctrl->flash_i2c_client,
+			fctrl->reg_setting->release_setting);
+		if (rc < 0)
+			pr_err("%s:%d failed\n", __func__, __LINE__);
+	}
 	
 	/* CCI deInit */
 	if (fctrl->flash_device_type == MSM_CAMERA_PLATFORM_DEVICE) {
@@ -266,6 +304,7 @@ static int msm_flash_sky81294_led_release(struct msm_led_flash_ctrl_t *fctrl)
 			pr_err("cci_deinit failed\n");
 	}
 
+	fctrl->led_state = MSM_CAMERA_LED_RELEASE;
 	return 0;
 }
 
@@ -374,6 +413,7 @@ static int msm_flash_sky81294_led_high(struct msm_led_flash_ctrl_t *fctrl)
 	return rc;
 }
 
+// zte-modify 20140829 add for fastmmi flash test +++
 #define FASTMMI_TEST_FLASH_ON      1
 #define FASTMMI_TEST_FLASH_OFF     0
 
@@ -444,12 +484,13 @@ static int msm_flash_sky81294_add_attr(struct platform_device *pdev, struct msm_
             pr_err("%s: Failed to create sysfs node: %d\n", __func__, ret);
 
         dev_set_drvdata(&pdev->dev, fctrl);
-        pr_err("wangjunfeng s_ctrl = %d\n", (int)fctrl);
+        pr_err("wangjunfeng s_ctrl = %ld\n", (long int)fctrl);
     }
 
     return ret;
 }
 
+// zte-modify 20140829 add for fastmmi flash test ---
 
 static struct msm_camera_i2c_client sky81294_i2c_client = {
 	.addr_type = MSM_CAMERA_I2C_BYTE_ADDR,

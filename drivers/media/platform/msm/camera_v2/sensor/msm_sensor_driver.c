@@ -17,8 +17,10 @@
 #include "camera.h"
 #include "msm_cci.h"
 #include "msm_camera_dt_util.h"
+//zte-modify 20140922 added for read camera id +++
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
+//zte-modify 20141121 added for read camera id ---
 //end
 #ifdef CONFIG_SENSOR_INFO 
  extern void msm_sensorinfo_set_rear_sensor_index(uint16_t index);
@@ -35,10 +37,12 @@ static struct v4l2_file_operations msm_sensor_v4l2_subdev_fops;
 /* Static declaration */
 static struct msm_sensor_ctrl_t *g_sctrl[MAX_CAMERAS];
 
+//zte-modify 20140922 added for read id +++
 static bool g_if_back_camera_id_read = false;
 static bool g_if_front_camera_id_read = false;
 static char g_back_camera_status [128]  = {0};
 static char g_front_camera_status [128]  = {0};
+//zte-modify 20140922 added for read id ---
 
 //lihaiyang 20150608 
 #if defined (CONFIG_OV13850_OTP)
@@ -639,6 +643,7 @@ static void msm_sensor_fill_sensor_info(struct msm_sensor_ctrl_t *s_ctrl,
 
 	strlcpy(entity_name, s_ctrl->msm_sd.sd.entity.name, MAX_SENSOR_NAME);
 }
+//zte-modify 20140922 added for read id +++
 static int front_camera_id_read_proc(struct seq_file *m, void *v)
 {
 	return seq_printf(m, "%s\n", g_front_camera_status);
@@ -679,6 +684,7 @@ int32_t back_camera_proc_file(struct msm_sensor_ctrl_t *s_ctrl)
     struct proc_dir_entry *proc_file = NULL;
     pr_err("zte: back_camera_proc_file enter,module name:%s\n",s_ctrl->sensordata->sensor_name);
 
+	  //zte-modify 20141121 added for PF839F30 read id +++
 	if(!strcmp("t4k35",s_ctrl->sensordata->sensor_name))
     {
         sprintf(g_back_camera_status,"%s","BACK Camera ID: t4k35 8M");
@@ -687,6 +693,7 @@ int32_t back_camera_proc_file(struct msm_sensor_ctrl_t *s_ctrl)
     {
         sprintf(g_back_camera_status,"%s","BACK Camera ID: imx214 13M");
     }
+	  //zte-modify 20141121 added for PF839F30 read id ---
     //lihy 20150624 add p829a10 back sensor info
 	if(!strcmp("ov13850",s_ctrl->sensordata->sensor_name))
     {
@@ -711,10 +718,12 @@ int32_t front_camera_proc_file(struct msm_sensor_ctrl_t *s_ctrl)
     struct proc_dir_entry *proc_file  = NULL;
     pr_err("zte: front_camera_proc_file,module name:%s\n",s_ctrl->sensordata->sensor_name);
 
+	  //zte-modify 20141121 added for PF839F30 read id +++
     if(!strcmp("s5k5e2",s_ctrl->sensordata->sensor_name))
     {
         sprintf(g_front_camera_status,"%s","FRONT Camera ID: s5k5e2 5M");
     }
+	  //zte-modify 20141121 added for PF839F30 read id ---
     //lihy 20150624 add p829a10 front sensor info
 	if(!strcmp("t4k35",s_ctrl->sensordata->sensor_name))
     {
@@ -735,6 +744,7 @@ int32_t front_camera_proc_file(struct msm_sensor_ctrl_t *s_ctrl)
     g_if_front_camera_id_read = true;
     return 0;
 }
+//zte-modify 20140922 added for read id ---
 
 
 /* static function definition */
@@ -988,6 +998,7 @@ int32_t msm_sensor_driver_probe(void *setting,
 	}
 
 	pr_err("%s probe succeeded", slave_info->sensor_name);
+        //zte-modify 20140922 added for read id +++
         if(CAMERA_0 == slave_info->camera_id && !g_if_back_camera_id_read)
         {
             back_camera_proc_file(s_ctrl);
@@ -996,6 +1007,7 @@ int32_t msm_sensor_driver_probe(void *setting,
         {
             front_camera_proc_file(s_ctrl);
         }
+        //zte-modify 20140922 added for read id ---
     
 
 	/*

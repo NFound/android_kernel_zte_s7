@@ -208,7 +208,7 @@ static int32_t msm_led_trigger_probe(struct platform_device *pdev)
 
 			if (flashtype == GPIO_FLASH) {
 				/* use fake current */
-				fctrl.flash_op_current[i] = 220;
+				fctrl.flash_op_current[i] = 220;//LED_FULL;zte gaoyangyang modify 2015.08.24
 			} else {
 				rc = of_property_read_u32(flash_src_node,
 					"qcom,current",
@@ -273,7 +273,7 @@ static int32_t msm_led_trigger_probe(struct platform_device *pdev)
 
 			if (flashtype == GPIO_FLASH) {
 				/* use fake current */
-				fctrl.torch_op_current[i] = 110;
+				fctrl.torch_op_current[i] = 110;//LED_HALF;zte gaoyangyang modify 2015.08.24
 			} else {
 				rc = of_property_read_u32(flash_src_node,
 					"qcom,current",

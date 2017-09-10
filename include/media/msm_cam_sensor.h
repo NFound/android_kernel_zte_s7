@@ -203,6 +203,9 @@ struct msm_sensor_info_t {
 	uint32_t sensor_mount_angle;
 	int modes_supported;
 	enum camb_position_t position;
+	//lihy 20151124 add vendor_id for ov13850
+	uint8_t vendor_id;
+	//end
 };
 
 struct camera_vreg_t {
@@ -401,7 +404,8 @@ enum msm_sensor_cfg_type_t {
 	CFG_SET_AUTOFOCUS,
 	CFG_CANCEL_AUTOFOCUS,
 	CFG_SET_STREAM_TYPE,
-	CFG_SET_OTP_DATA,  
+	CFG_SET_OTP_DATA,  //ZTE yuxin add for t4k35 apply otp,2015.09.21
+	CFG_GET_SENSOR_VENDOR_ID, //lihy 20151124 add vendor id for ov13850
 };
 
 enum msm_actuator_cfg_type_t {

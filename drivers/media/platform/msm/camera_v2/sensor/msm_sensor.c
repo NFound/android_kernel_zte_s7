@@ -18,10 +18,12 @@
 #include <linux/regulator/rpm-smd-regulator.h>
 #include <linux/regulator/consumer.h>
 
+//ZTE yuxin add for t4k35 read and apply otp,2015.09.21++
 #if defined (CONFIG_T4K35_OTP)
 #include "t4k35_otp.h"
 struct t4k35_otp_struct t4k35_otp_data;
 #endif
+//ZTE yuxin add for t4k35 read and apply otp,2015.09.21--
 
 
 #undef CDBG
@@ -933,7 +935,25 @@ static int msm_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 		}
 		break;
 	}
+ //ZTE yuxin add for apply t4k35 otp for 64bit version,2015.10.20++
+	case CFG_SET_OTP_DATA:{
+		#if defined (CONFIG_T4K35_OTP)
+		  if((strcmp(s_ctrl->sensordata->sensor_name, "t4k35")) == 0)
+		  {
+		         CDBG("yuxin add t4k35 otp entre,read flag is %d\n",t4k35_otp_data.read_completed_flag);
+			  if(t4k35_otp_data.read_completed_flag== 0)
+		        {
+			       t4k35_otp_read_setting(s_ctrl,&t4k35_otp_data);
+		        }
 
+			 CDBG("yuxin add module vendor id is %d,lens id is %d\n",t4k35_otp_data.Module_Info.module_vendor_id,
+			                    t4k35_otp_data.Module_Info.lens_id);
+	               t4k35_otp_apply_setting(s_ctrl,&t4k35_otp_data);
+	         }
+           #endif    
+        break;
+	}
+    //ZTE yuxin add for apply t4k35 otpfor 64bit version,2015.10.20--
 	default:
 		rc = -EFAULT;
 		break;
@@ -1321,6 +1341,7 @@ int msm_sensor_config(struct msm_sensor_ctrl_t *s_ctrl, void __user *argp)
 		}
 		break;
 	}
+    //ZTE yuxin add for apply t4k35 otp,2015.09.21++
 	case CFG_SET_OTP_DATA:{
 		#if defined (CONFIG_T4K35_OTP)
 		  if((strcmp(s_ctrl->sensordata->sensor_name, "t4k35")) == 0)
@@ -1338,7 +1359,17 @@ int msm_sensor_config(struct msm_sensor_ctrl_t *s_ctrl, void __user *argp)
            #endif    
         break;
 	}
+    //ZTE yuxin add for apply t4k35 otp,2015.09.21--
 
+	//lihy 20151124 add vendor id for ov13850 
+    case CFG_GET_SENSOR_VENDOR_ID:{
+		 #if defined (CONFIG_OV13850_OTP)
+		 extern uint8_t get_ov13850_vendor_id(void);
+		 cdata->cfg.sensor_info.vendor_id = get_ov13850_vendor_id();
+		 #endif
+	 	 break;
+    }
+	//end
 	default:
 		rc = -EFAULT;
 		break;

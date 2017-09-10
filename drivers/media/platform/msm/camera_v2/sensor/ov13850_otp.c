@@ -491,3 +491,7 @@ int32_t ov13850_set_otp(struct msm_sensor_ctrl_t *s_ctrl)
     ov13850_apply_otp(s_ctrl,&g_ov13850_otp_data);
     return 0;
 }
+uint8_t get_ov13850_vendor_id(void)
+{
+	return g_ov13850_otp_data.module_awb_info.module_integrator_id;
+}

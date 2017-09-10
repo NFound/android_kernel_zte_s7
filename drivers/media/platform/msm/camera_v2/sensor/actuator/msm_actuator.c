@@ -1344,8 +1344,7 @@ static struct msm_actuator msm_vcm_actuator_table = {
 		.actuator_init_focus = msm_actuator_init_focus,
 		.actuator_parse_i2c_params = msm_actuator_parse_i2c_params,
 		.actuator_set_position = msm_actuator_set_position,
-		//.actuator_park_lens = msm_actuator_park_lens,//qualcomm org code
-		.actuator_park_lens = NULL,  //yuxin modify this function NULL 2015.07.13
+		.actuator_park_lens = msm_actuator_park_lens,
 	},
 };
 

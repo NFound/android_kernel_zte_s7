@@ -11,7 +11,7 @@
  *
  */
 
- 
+ /*ZTE yuxin create this file for P839F50 PRJ use LM3646 flash chip as main cam LED flash driver,2014.11.14 ++*/
 #include <linux/module.h>
 #include <linux/export.h>
 
@@ -52,7 +52,9 @@ static struct msm_led_flash_ctrl_t fctrl;
 static struct i2c_driver lm3646_i2c_driver;
 
 
+// zte-modify 20140829 add for fastmmi flash test +++
 static int msm_flash_lm3646_add_attr(struct platform_device *pdev, struct msm_led_flash_ctrl_t *fctrl);
+// zte-modify 20140829 add for fastmmi flash test ---
 
 static void __exit msm_flash_lm3646_i2c_remove(void)
 {
@@ -102,12 +104,15 @@ static struct i2c_driver lm3646_i2c_driver = {
 static int msm_flash_lm3646_platform_probe(struct platform_device *pdev)
 {
 	const struct of_device_id *match;
+    // zte-modify 20140829 add for fastmmi flash test +++
     int ret = -1;
+    // zte-modify 20140829 add for fastmmi flash test ---
 
 	match = of_match_device(lm3646_trigger_dt_match, &pdev->dev);
 	if (!match)
 		return -EFAULT;
 
+    // zte-modify 20140829 add for fastmmi flash test +++
 	//return msm_flash_probe(pdev, match->data);
 	ret = msm_flash_probe(pdev, match->data);
     if (0 == ret)
@@ -116,6 +121,7 @@ static int msm_flash_lm3646_platform_probe(struct platform_device *pdev)
     }
 
     return ret;
+    // zte-modify 20140829 add for fastmmi flash test ---
 }
 
 static struct platform_driver lm3646_platform_driver = {
@@ -413,6 +419,7 @@ static int msm_flash_lm3646_led_high(struct msm_led_flash_ctrl_t *fctrl)
 	return rc;
 }
 
+// zte-modify 20140829 add for fastmmi flash test +++
 #define FASTMMI_TEST_FLASH_ON      1
 #define FASTMMI_TEST_FLASH_OFF     0
 
@@ -489,6 +496,7 @@ static int msm_flash_lm3646_add_attr(struct platform_device *pdev, struct msm_le
     return ret;
 }
 
+// zte-modify 20140829 add for fastmmi flash test ---
 static struct msm_camera_i2c_client lm3646_i2c_client = {
 	.addr_type = MSM_CAMERA_I2C_BYTE_ADDR,
 };
@@ -516,4 +524,4 @@ module_exit(msm_flash_lm3646_exit_module);
 MODULE_DESCRIPTION("lm3646 FLASH");
 MODULE_LICENSE("GPL v2");
 
- 
+ /*ZTE yuxin create this file for P839F50 PRJ use LM3646 flash chip as main cam LED flash driver,2014.11.14 --*/
